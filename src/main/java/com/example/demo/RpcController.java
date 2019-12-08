@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 @RestController
 public class RpcController {
@@ -58,17 +59,13 @@ public class RpcController {
         String command = "curl " + userAuth + " " + headerContentType + " " + typeRequest + " " + data + " " + url;
 
         Process process = Runtime.getRuntime().exec(command);
-        InputStream is = process.getInputStream();
-        InputStreamReader isr = new InputStreamReader(is);
-        BufferedReader br = new BufferedReader(isr);
-        StringBuilder responseStrBuilder = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            responseStrBuilder.append(line);
-        }
+        String result = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))
+                .lines()
+                .collect(Collectors.joining("\n"));
 
-        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + line);
+        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + result);
 
-        return line;
+        return result;
     }
 }
