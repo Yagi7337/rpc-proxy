@@ -66,6 +66,8 @@ public class RpcController {
             responseStrBuilder.append(line);
         }
 
+        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command);
+
         return line;
     }
 }
