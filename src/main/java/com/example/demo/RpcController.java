@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.apache.http.HttpResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,13 +11,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
+import static org.toilelibre.libe.curl.Curl.curl;
+
 @RestController
 public class RpcController {
 
     private final static String RPC_USER = "devprod";
     private final static String RPC_PASSWORD = "pass123";
 
-    private final static String HEADER_CONTENT_TYPE = "Content-Type: application/json";
+    private final static String HEADER_CONTENT_TYPE = "'Content-Type: application/json'";
 
     private final static String HOST = "http://172.31.3.31";
     private final static String PORT = "8888";
@@ -38,38 +41,28 @@ public class RpcController {
         char[] body = requestBody.toCharArray();
 
         StringBuilder bodyString = new StringBuilder();
+        bodyString.append("'");
         for(char ch: body){
-            if(ch == '"') {
-                bodyString.append("\\").append(ch);
-            } else {
-                bodyString.append(ch);
-            }
+            bodyString.append(ch);
         }
+        bodyString.append("'");
 
-        String userAuth = "-u " + RPC_USER + ":" + RPC_PASSWORD;
-        String headerContentType = "-H " + HEADER_CONTENT_TYPE;
-        String typeRequest = "-X " + type;
-        String data = "--data-binary " + bodyString;
         String url = HOST + ":" + PORT;
 
-        String command = "curl " + userAuth + " " + headerContentType + " " + typeRequest + " " + data + " " + url;
-        String command1 = "curl -u devprod:pass123 -H 'Content-Type: application/json' -X GET -d '{\"jsonrpc\": 1, \"method\": \"getinfo\"}' http://172.31.3.31:8888";
+        HttpResponse response = curl()
+                .u(RPC_USER + ":" + RPC_PASSWORD)
+                .header(HEADER_CONTENT_TYPE)
+                .xUpperCase(type)
+                .d(bodyString.toString())
+                .run(url);
 
-        Process process = Runtime.getRuntime().exec(command1);
-//Older version than java 8
-        BufferedReader response = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        StringBuilder result = new StringBuilder();
-        String s;
-        while((s = response.readLine()) != null) {
-            result.append(s);
-        }
-        System.out.println(result.toString());
+        String result = new BufferedReader(
+                new InputStreamReader(response.getEntity().getContent()))
+                .lines()
+                .collect(Collectors.joining("\n"));
 
-//You then need to close the BufferedReader if not using Java 8
-        response.close();
+        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + response + " | Result: " + result);
 
-        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + result.toString());
-
-        return result.toString();
+        return result;
     }
 }
