@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
@@ -15,12 +14,12 @@ import java.util.stream.Collectors;
 public class RpcController {
 
     private final static String RPC_USER = "devprod";
-    private final static String RPC_PASSWORD = "ZcergOfTzoSbDEFNdcxaEBRDRJh3VOOs-anma1viJPk=";
+    private final static String RPC_PASSWORD = "pass123";
 
-    private final static String HEADER_CONTENT_TYPE = "'Content-Type: application/json'";
+    private final static String HEADER_CONTENT_TYPE = "Content-Type: application/json";
 
-    private final static String HOST = "http://127.0.0.1";
-    private final static String PORT = "8889";
+    private final static String HOST = "http://172.31.3.31";
+    private final static String PORT = "8888";
 
     private final static String GET_REQUEST = "GET";
     private final static String POST_REQUEST = "POST";
@@ -28,11 +27,6 @@ public class RpcController {
     @GetMapping
     public String rpcTestGetMethod(@RequestBody String requestBody) throws IOException {
         return sendCurlCall(GET_REQUEST, requestBody);
-    }
-
-    @GetMapping("/test")
-    public String rpcTestGetMethod1(@RequestBody String requestBody) throws IOException {
-        return "success";
     }
 
     @PostMapping
@@ -44,7 +38,6 @@ public class RpcController {
         char[] body = requestBody.toCharArray();
 
         StringBuilder bodyString = new StringBuilder();
-        bodyString.append("'");
         for(char ch: body){
             if(ch == '"') {
                 bodyString.append("\\").append(ch);
@@ -52,24 +45,31 @@ public class RpcController {
                 bodyString.append(ch);
             }
         }
-        bodyString.append("'");
 
         String userAuth = "-u " + RPC_USER + ":" + RPC_PASSWORD;
         String headerContentType = "-H " + HEADER_CONTENT_TYPE;
         String typeRequest = "-X " + type;
-        String data = "-d " + bodyString;
+        String data = "--data-binary " + bodyString;
         String url = HOST + ":" + PORT;
 
         String command = "curl " + userAuth + " " + headerContentType + " " + typeRequest + " " + data + " " + url;
+        String command1 = "curl -u devprod:pass123 -H 'Content-Type: application/json' -X GET -d '{\"jsonrpc\": 1, \"method\": \"getinfo\"}' http://172.31.3.31:8888";
 
-        Process process = Runtime.getRuntime().exec(command);
-        String result = new BufferedReader(
-                new InputStreamReader(process.getInputStream()))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        Process process = Runtime.getRuntime().exec(command1);
+//Older version than java 8
+        BufferedReader response = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder result = new StringBuilder();
+        String s;
+        while((s = response.readLine()) != null) {
+            result.append(s);
+        }
+        System.out.println(result.toString());
 
-        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + result);
+//You then need to close the BufferedReader if not using Java 8
+        response.close();
 
-        return result;
+        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + result.toString());
+
+        return result.toString();
     }
 }
