@@ -18,8 +18,8 @@ public class RpcController {
 
     private final static String HEADER_CONTENT_TYPE = "'Content-Type: application/json'";
 
-    private final static String HOST = "http://127.0.0.1";
-    private final static String PORT = "8889";
+    private final static String HOST = "http://localhost";
+    private final static String PORT = "8080/test";
 
     private final static String GET_REQUEST = "GET";
     private final static String POST_REQUEST = "POST";
@@ -27,6 +27,11 @@ public class RpcController {
     @GetMapping
     public String rpcTestGetMethod(@RequestBody String requestBody) throws IOException {
         return sendCurlCall(GET_REQUEST, requestBody);
+    }
+
+    @GetMapping("/test")
+    public String rpcTestGetMethod1(@RequestBody String requestBody) throws IOException {
+        return "success";
     }
 
     @PostMapping
@@ -40,11 +45,7 @@ public class RpcController {
         StringBuilder bodyString = new StringBuilder();
         bodyString.append("'");
         for(char ch: body){
-            if(ch == '"'){
-                bodyString.append("\\").append(ch);
-            }else {
                 bodyString.append(ch);
-            }
         }
         bodyString.append("'");
 
@@ -66,7 +67,7 @@ public class RpcController {
             responseStrBuilder.append(line);
         }
 
-        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command);
+        System.out.println("Method 'sendCurlCall'. RequestBody:" + requestBody + " | Curl: " + command + " | Result: " + line);
 
         return line;
     }
