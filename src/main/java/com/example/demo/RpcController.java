@@ -46,7 +46,11 @@ public class RpcController {
         StringBuilder bodyString = new StringBuilder();
         bodyString.append("'");
         for(char ch: body){
+            if(ch == '"') {
+                bodyString.append("\\").append(ch);
+            } else {
                 bodyString.append(ch);
+            }
         }
         bodyString.append("'");
 
