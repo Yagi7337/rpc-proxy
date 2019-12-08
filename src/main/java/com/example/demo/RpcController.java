@@ -18,8 +18,8 @@ public class RpcController {
 
     private final static String HEADER_CONTENT_TYPE = "'Content-Type: application/json'";
 
-    private final static String HOST = "http://localhost";
-    private final static String PORT = "8080/test";
+    private final static String HOST = "http://127.0.0.1";
+    private final static String PORT = "8889";
 
     private final static String GET_REQUEST = "GET";
     private final static String POST_REQUEST = "POST";
